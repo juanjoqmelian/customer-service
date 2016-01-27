@@ -77,7 +77,8 @@ public class CustomerResourceIT {
 
         assertThat(response.getStatus(), is(Response.Status.OK.getStatusCode()));
         //TODO - Improve the assertions of this test, shitty right now
-        assertThat(response.getLinks(), hasSize(3));
+        assertThat(response.getLinks(), hasSize(4));
+        assertThat(response.getLink("self").getUri(), is(webTarget.getUriBuilder().build()));
         List<Customer> customers = response.readEntity(List.class);
         assertThat(customers, hasSize(3));
     }
