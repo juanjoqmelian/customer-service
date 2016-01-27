@@ -2,6 +2,7 @@ package com.drago.microservices;
 
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -28,6 +29,10 @@ public class CustomerResourceTest {
 
         mockUriInfo = Mockito.mock(UriInfo.class);
         customerResource.setUriInfo(mockUriInfo);
+
+        final UriBuilder uriBuilder = UriBuilder.fromUri("http://example.com:8080");
+        when(mockUriInfo.getBaseUri()).thenReturn(uriBuilder.build());
+        when(mockUriInfo.getBaseUriBuilder()).thenReturn(uriBuilder);
     }
 
 
@@ -62,5 +67,45 @@ public class CustomerResourceTest {
         assertThat(response.getStatus(), is(Response.Status.OK.getStatusCode()));
         List<Customer> existingCustomers = (List<Customer>) response.getEntity();
         assertThat(existingCustomers, is(not(empty())));
+    }
+
+    @Test
+    public void update_shouldReturnNoContentIfCustomerIsUpdated() {
+
+        final Customer customer = new Customer("123456", "Mary", 500000);
+
+        Response response = customerResource.update(customer.getId(), customer);
+
+        assertThat(response.getStatus(), is(Response.Status.NO_CONTENT.getStatusCode()));
+    }
+
+    @Ignore("WIP")
+    @Test
+    public void update_shouldReturnNotFoundIfCustomerDoesNotExist() {
+
+        final Customer customer = new Customer("fakeCustomerId", "Donatello", 32432);
+
+        Response response = customerResource.update(customer.getId(), customer);
+
+        assertThat(response.getStatus(), is(Response.Status.NOT_FOUND.getStatusCode()));
+    }
+
+    @Test
+    public void delete_shouldDeleteAnExistingCustomer() {
+
+        String customerId = "123456";
+
+        Response response = customerResource.delete(customerId);
+
+        assertThat(response.getStatus(), is(Response.Status.NO_CONTENT.getStatusCode()));
+    }
+
+    @Ignore("WIP")
+    @Test
+    public void delete_shouldReturnNotFoundIfCustomerDoesNotExist() {
+
+        Response response = customerResource.delete("fakeCustomerId");
+
+        assertThat(response.getStatus(), is(Response.Status.NOT_FOUND.getStatusCode()));
     }
 }

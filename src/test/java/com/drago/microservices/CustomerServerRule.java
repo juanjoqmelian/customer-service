@@ -40,7 +40,7 @@ public class CustomerServerRule extends ExternalResource {
             server.stop();
             System.out.println("Server stopped...");
         } catch (Exception e) {
-            new RuntimeException(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -49,19 +49,5 @@ public class CustomerServerRule extends ExternalResource {
         server = new CustomerServer(HOST, PORT);
         server.start();
         System.out.println("Server started at " + baseUri().build());
-    }
-
-
-    public static void main(String[] args) {
-
-        CustomerServerRule serverRule = new CustomerServerRule();
-
-        try {
-            serverRule.startAppServer();
-            Thread.sleep(120000);
-            serverRule.stopAppServer();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 }

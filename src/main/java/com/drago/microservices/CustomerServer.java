@@ -1,49 +1,47 @@
 package com.drago.microservices;
 
-
-import com.sun.jersey.api.container.httpserver.HttpServerFactory;
-import com.sun.jersey.api.core.PackagesResourceConfig;
-import com.sun.jersey.api.core.ResourceConfig;
-import com.sun.net.httpserver.HttpServer;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.servlet.ServletContextHandler;
+import org.eclipse.jetty.servlet.ServletHolder;
+import org.glassfish.jersey.jackson.JacksonFeature;
+import org.glassfish.jersey.server.ResourceConfig;
+import org.glassfish.jersey.servlet.ServletContainer;
 
 import javax.ws.rs.core.UriBuilder;
 import java.io.IOException;
-import java.net.InetAddress;
 import java.net.URI;
-import java.net.UnknownHostException;
 
 public class CustomerServer {
 
     private final String host;
     private final int port;
 
-    private HttpServer httpServer;
+    private Server httpServer;
 
 
     public CustomerServer(String host, int port) {
         this.host = host;
         this.port = port;
-        try {
-            this.httpServer = createHttpServer();
-        } catch (IOException e) {
-            System.out.println("Exception trying to start CustomerServer!");
-        }
+
+        this.httpServer = createHttpServer();
     }
 
     public void start() {
-        httpServer.start();
+        try {
+
+            httpServer.start();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
 
     public void stop() {
-        httpServer.stop(0);
-    }
-
-    private HttpServer createHttpServer() throws IOException {
-
-        ResourceConfig customerResourceConfig =
-                new PackagesResourceConfig("com.drago.microservices");
-        return HttpServerFactory.create(getCustomerResourceUri(), customerResourceConfig);
+        try {
+            httpServer.stop();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
 
@@ -51,14 +49,18 @@ public class CustomerServer {
         return UriBuilder.fromUri("http://" + host + "/").port(port).build();
     }
 
-    private String customerResourceHost() {
-        String hostName = "localhost";
-        try {
-            hostName = InetAddress.getLocalHost().getCanonicalHostName();
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
-        }
-        return hostName;
+    private Server createHttpServer() {
+        ResourceConfig resourceConfig = new ResourceConfig();
+        resourceConfig.packages(CustomerResource.class.getPackage().getName());
+        resourceConfig.register(JacksonFeature.class);
+        ServletContainer servletContainer = new ServletContainer(resourceConfig);
+        ServletHolder sh = new ServletHolder(servletContainer);
+        Server server = new Server(port);
+        ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
+        context.setContextPath("/");
+        context.addServlet(sh, "/*");
+        server.setHandler(context);
+        return server;
     }
 
     public static void main(String[] args) throws IOException {
