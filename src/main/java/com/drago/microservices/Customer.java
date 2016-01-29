@@ -1,10 +1,9 @@
 package com.drago.microservices;
 
 
-import javax.xml.bind.annotation.XmlRootElement;
 import java.util.Objects;
 
-@XmlRootElement
+
 public class Customer {
 
     private String id;

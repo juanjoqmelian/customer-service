@@ -1,6 +1,7 @@
 package com.drago.microservices;
 
 import com.drago.microservices.repository.CustomerRepository;
+import com.drago.microservices.repository.CustomerRepositoryFactory;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -25,11 +26,7 @@ public class CustomerResource {
 
 
     public CustomerResource() {
-        this.customerRepository = new CustomerRepository("local-redis", 6379);
-    }
-
-    public CustomerResource(CustomerRepository customerRepository) {
-        this.customerRepository = customerRepository;
+        this.customerRepository = CustomerRepositoryFactory.get("localhost", 6379);
     }
 
 
@@ -108,5 +105,10 @@ public class CustomerResource {
     @Context
     public void setUriInfo(UriInfo uriInfo) {
         this.uriInfo = uriInfo;
+    }
+
+
+    public void setCustomerRepository(CustomerRepository customerRepository) {
+        this.customerRepository = customerRepository;
     }
 }

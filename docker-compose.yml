@@ -4,6 +4,7 @@ customer-service:
     - "8080:8085"
   links:
     - redis:local-redis
+    - container-exporter:container-exporter
 cadvisor:
   image: google/cadvisor
   volumes:
@@ -17,3 +18,20 @@ redis:
   image: redis
   ports:
     - "6379:6379"
+prometheus:
+  image: prom/prometheus
+  volumes:
+    - /prometheus.yml:/prometheus.yml
+  environment:
+    config.file: /prometheus.yml
+    storage.local.path: /prometheus
+    storage.local.memory-chunks: 10000
+  ports:
+    - "9090:9090"
+container-exporter:
+  image: prom/container-exporter
+  volumes:
+    - /sys/fs/cgroup:/cgroup
+    - /var/run/docker.sock:/var/run/docker.sock
+  ports:
+    - "9104:9104"

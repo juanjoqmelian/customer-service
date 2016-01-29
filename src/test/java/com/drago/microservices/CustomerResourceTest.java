@@ -3,6 +3,7 @@ package com.drago.microservices;
 
 import com.drago.microservices.exception.CustomerNotFoundException;
 import com.drago.microservices.repository.CustomerRepository;
+import com.drago.microservices.repository.CustomerRepositoryFactory;
 import com.google.common.collect.Lists;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
@@ -11,6 +12,10 @@ import org.jmock.lib.legacy.ClassImposteriser;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
 
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
@@ -22,6 +27,8 @@ import java.util.UUID;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
+@RunWith(PowerMockRunner.class)
+@PrepareForTest(CustomerRepositoryFactory.class)
 public class CustomerResourceTest {
 
     private CustomerResource customerResource;
@@ -40,7 +47,11 @@ public class CustomerResourceTest {
 
         mockUriInfo = mockery.mock(UriInfo.class);
         mockCustomerRepository = mockery.mock(CustomerRepository.class);
-        customerResource = new CustomerResource(mockCustomerRepository);
+
+        PowerMockito.mockStatic(CustomerRepositoryFactory.class);
+        PowerMockito.when(CustomerRepositoryFactory.get("localhost", 6379)).thenReturn(mockCustomerRepository);
+        customerResource = new CustomerResource();
+        customerResource.setCustomerRepository(mockCustomerRepository);
         customerResource.setUriInfo(mockUriInfo);
     }
 
