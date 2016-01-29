@@ -1,5 +1,7 @@
 package com.drago.microservices;
 
+import com.drago.microservices.repository.CustomerRepository;
+
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -13,23 +15,32 @@ import javax.ws.rs.core.Link;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.UUID;
 
 @Path("/customer")
 public class CustomerResource {
 
     private UriInfo uriInfo;
+    private CustomerRepository customerRepository;
+
+
+    public CustomerResource() {
+        this.customerRepository = new CustomerRepository("localhost", 6379);
+    }
+
+    public CustomerResource(CustomerRepository customerRepository) {
+        this.customerRepository = customerRepository;
+    }
 
 
     @POST
     @Consumes("application/json")
     public Response create(Customer customer) {
 
-        String randomId = UUID.randomUUID().toString();
+        final String customerId = customerRepository.save(customer);
+
         return Response
-                .created(uriInfo.getAbsolutePathBuilder().path("{id}").build(randomId))
+                .created(uriInfo.getAbsolutePathBuilder().path("{id}").build(customerId))
                 .build();
     }
 
@@ -38,7 +49,7 @@ public class CustomerResource {
     @Produces("application/json")
     public Response getCustomer(@PathParam("id") String id) {
 
-        Customer customer = new Customer(id, "Jon", 50000);
+        Customer customer = customerRepository.getCustomer(id);
         Link selfLink = Link.fromUri(uriInfo.getBaseUriBuilder().path(CustomerResource.class).path(id).build())
                 .rel("self")
                 .build();
@@ -51,10 +62,7 @@ public class CustomerResource {
     @Produces("application/json")
     public Response getAll() {
 
-        List<Customer> customers = Arrays.asList(
-                new Customer(UUID.randomUUID().toString(), "Jon", 213231),
-                new Customer(UUID.randomUUID().toString(), "Mary", 566576),
-                new Customer(UUID.randomUUID().toString(), "Anne", 54353435));
+        List<Customer> customers = customerRepository.getAll();
 
         List<Link> links = new ArrayList<>();
 
@@ -78,6 +86,8 @@ public class CustomerResource {
     @Consumes("application/json")
     public Response update(@PathParam("id") String customerId, Customer customer) {
 
+        customerRepository.update(customer);
+
         Link selfLink = Link.fromUri(uriInfo.getBaseUriBuilder().path("id").build())
                 .rel("self").build();
 
@@ -90,6 +100,7 @@ public class CustomerResource {
     @DELETE
     public Response delete(@PathParam("id") String customerId) {
 
+        customerRepository.delete(customerId);
         return Response.noContent().build();
     }
 

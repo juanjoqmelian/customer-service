@@ -5,8 +5,12 @@
         <servlet-name>Jersey Web Application</servlet-name>
         <servlet-class>org.glassfish.jersey.servlet.ServletContainer</servlet-class>
         <init-param>
+            <param-name>providers</param-name>
+            <param-value>com.drago.microservices.exception</param-value>
+        </init-param>
+        <init-param>
             <param-name>jersey.config.server.provider.packages</param-name>
-            <param-value>com.drago.microservices</param-value>
+            <param-value>com.drago.microservices, com.drago.microservices.exception</param-value>
         </init-param>
         <load-on-startup>1</load-on-startup>
     </servlet>

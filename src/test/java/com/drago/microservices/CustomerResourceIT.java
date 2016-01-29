@@ -2,10 +2,15 @@ package com.drago.microservices;
 
 
 
+import com.drago.microservices.rules.CustomerServerRule;
+import com.drago.microservices.rules.RedisRule;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.jackson.JacksonFeature;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import javax.ws.rs.client.Client;
@@ -14,6 +19,7 @@ import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 
@@ -21,6 +27,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
 
 public class CustomerResourceIT {
 
@@ -28,6 +35,9 @@ public class CustomerResourceIT {
 
     @ClassRule
     public static CustomerServerRule customerServerRule = new CustomerServerRule();
+
+    @ClassRule
+    public static RedisRule redisRule = new RedisRule("localhost", 6379);
 
 
     @Before
@@ -41,9 +51,23 @@ public class CustomerResourceIT {
 
 
     @Test
-    public void shouldRetrieveAnExistingUserByAGivenId() {
+    public void getCustomer_shouldReturnBadRequestIfCustomerDoesNotExist() {
+
+        final String fakeCustomerId = "fake-customer-id";
+
+        Response response = webTarget.path(fakeCustomerId)
+                .request(MediaType.APPLICATION_JSON_TYPE)
+                .get(Response.class);
+
+        assertThat(response.getStatus(), is(Response.Status.BAD_REQUEST.getStatusCode()));
+    }
+
+    @Test
+    public void getCustomer_shouldRetrieveAnExistingUserByAGivenId() throws JsonProcessingException {
 
         final String customerId = UUID.randomUUID().toString();
+        final Customer existingCustomer = new Customer(customerId, "Chuck Norris", 9000);
+        redisRule.insert(existingCustomer);
 
         Response response = webTarget.path(customerId)
                 .request(MediaType.APPLICATION_JSON_TYPE)
@@ -52,11 +76,11 @@ public class CustomerResourceIT {
         assertThat(response.getStatus(), is(Response.Status.OK.getStatusCode()));
         assertThat(response.getLink("self").getUri(), is(webTarget.getUriBuilder().path(customerId).build()));
         Customer customer = response.readEntity(Customer.class);
-        assertThat(customer, is(new Customer(customerId, "Jon", 50000)));
+        assertThat(customer, is(new Customer(customerId, "Chuck Norris", 9000)));
     }
 
     @Test
-    public void shouldCreateANewCustomer() {
+    public void create_shouldCreateANewCustomer() {
 
         final Customer customer = new Customer("Chuck Norris", Integer.MAX_VALUE);
 
@@ -67,6 +91,47 @@ public class CustomerResourceIT {
         assertThat(response.getLocation(), is(notNullValue()));
     }
 
+    @Test
+    public void update_shouldUpdateAnExistingCustomer() throws IOException {
+
+        final String customerId = UUID.randomUUID().toString();
+        final Customer existingCustomer = new Customer(customerId, "Chuck Norris", 9000);
+        redisRule.insert(existingCustomer);
+        final Customer updatedCustomer = new Customer(customerId, "Jean Claude", 10000);
+
+        Response response = webTarget.path(customerId).request(MediaType.APPLICATION_JSON_TYPE)
+                .put(Entity.entity(updatedCustomer, MediaType.APPLICATION_JSON_TYPE), Response.class);
+
+        assertThat(response.getStatus(), is(Response.Status.NO_CONTENT.getStatusCode()));
+        assertThat(redisRule.getCustomer(customerId), is(updatedCustomer));
+    }
+
+    @Test
+    public void update_shouldReturnBadRequestIfCustomerDoesNotExist() throws IOException {
+
+        final Customer updatedCustomer = new Customer("fake-id", "Jean Claude", 10000);
+
+        Response response = webTarget.path(updatedCustomer.getId()).request(MediaType.APPLICATION_JSON_TYPE)
+                .put(Entity.entity(updatedCustomer, MediaType.APPLICATION_JSON_TYPE), Response.class);
+
+        assertThat(response.getStatus(), is(Response.Status.BAD_REQUEST.getStatusCode()));
+    }
+
+    @Test
+    public void delete_shouldDeleteAnExistingCustomer() throws IOException {
+
+        final String customerId = UUID.randomUUID().toString();
+        final Customer existingCustomer = new Customer(customerId, "Chuck Norris", 9000);
+        redisRule.insert(existingCustomer);
+
+        Response response = webTarget.path(customerId).request(MediaType.APPLICATION_JSON_TYPE)
+                .delete(Response.class);
+
+        assertThat(response.getStatus(), is(Response.Status.NO_CONTENT.getStatusCode()));
+        assertThat(redisRule.getCustomer(customerId), is(nullValue()));
+    }
+
+    @Ignore("WIP")
     @Test
     public void shouldRetrieveAllExistingCustomers() {
 
@@ -79,5 +144,10 @@ public class CustomerResourceIT {
         assertThat(response.getLink("self").getUri(), is(webTarget.getUriBuilder().build()));
         List<Customer> customers = response.readEntity(List.class);
         assertThat(customers, hasSize(3));
+    }
+
+    @After
+    public void cleanup() {
+        redisRule.cleanup();
     }
 }

@@ -1,6 +1,7 @@
-package com.drago.microservices;
+package com.drago.microservices.rules;
 
 
+import com.drago.microservices.CustomerServer;
 import org.junit.rules.ExternalResource;
 
 import javax.ws.rs.core.UriBuilder;
@@ -36,18 +37,18 @@ public class CustomerServerRule extends ExternalResource {
 
     private void stopAppServer() {
         try {
-            System.out.println("Stopping server...");
+            System.out.println("Stopping http server...");
             server.stop();
-            System.out.println("Server stopped...");
+            System.out.println("HTTP server stopped...");
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
     private void startAppServer() throws Exception {
-        System.out.println("Starting server...");
+        System.out.println("Starting http server...");
         server = new CustomerServer(HOST, PORT);
         server.start();
-        System.out.println("Server started at " + baseUri().build());
+        System.out.println("HTTP server started at " + baseUri().build());
     }
 }
