@@ -37,7 +37,7 @@ public class CustomerRepository {
         try {
             final String storedValue = syncCommands.get(customerId);
             if (Strings.isNullOrEmpty(storedValue)) {
-                throw new CustomerNotFoundException("Customer with id=" + customerId + "does not exist!");
+                throw new CustomerNotFoundException("Customer with id=" + customerId + " does not exist!");
             }
             customer = objectMapper.readValue(storedValue, Customer.class);
         } catch (IOException e) {
@@ -62,7 +62,7 @@ public class CustomerRepository {
         try {
             String storedValue = syncCommands.get(customer.getId());
             if (Strings.isNullOrEmpty(storedValue)) {
-                throw new CustomerNotFoundException("Customer with id=" + customer.getId() + "does not exist!");
+                throw new CustomerNotFoundException("Customer with id=" + customer.getId() + " does not exist!");
             }
             syncCommands.set(customer.getId(), objectMapper.writeValueAsString(customer));
         } catch (JsonProcessingException e) {

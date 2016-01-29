@@ -25,7 +25,7 @@ public class CustomerResource {
 
 
     public CustomerResource() {
-        this.customerRepository = new CustomerRepository("localhost", 6379);
+        this.customerRepository = new CustomerRepository("local-redis", 6379);
     }
 
     public CustomerResource(CustomerRepository customerRepository) {

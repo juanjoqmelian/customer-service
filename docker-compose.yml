@@ -2,6 +2,8 @@ customer-service:
   build: .
   ports:
     - "8080:8085"
+  links:
+    - redis:local-redis
 cadvisor:
   image: google/cadvisor
   volumes:
@@ -11,3 +13,7 @@ cadvisor:
    - /var/lib/docker/:/var/lib/docker:ro
   ports:
      - "8099:8080"
+redis:
+  image: redis
+  ports:
+    - "6379:6379"
