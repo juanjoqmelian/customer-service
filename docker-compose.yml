@@ -21,11 +21,8 @@ redis:
 prometheus:
   image: prom/prometheus
   volumes:
-    - /prometheus.yml:/prometheus.yml
-  environment:
-    config.file: /prometheus.yml
-    storage.local.path: /prometheus
-    storage.local.memory-chunks: 10000
+    - /prometheus.yml:/etc/prometheus/prometheus.yml
+  command: -storage.local.memory-chunks=10000
   ports:
     - "9090:9090"
 container-exporter:

@@ -1,0 +1,16 @@
+# A scrape configuration scraping a Node Exporter and the Prometheus server
+# itself.
+scrape_configs:
+  # Scrape Prometheus itself every 5 seconds.
+#  - job_name: 'prometheus'
+#    scrape_interval: 5s
+#    target_groups:
+#      - targets: ['localhost:9090']
+
+  # Scrape the exporter every 5 seconds.
+  - job_name: 'customer-service'
+    scrape_interval: 5s
+    target_groups:
+      - targets: ['192.168.99.100:9104']
+        labels:
+          group: 'customer-service'

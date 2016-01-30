@@ -26,7 +26,7 @@ public class CustomerResource {
 
 
     public CustomerResource() {
-        this.customerRepository = CustomerRepositoryFactory.get("localhost", 6379);
+        this.customerRepository = CustomerRepositoryFactory.get("local-redis", 6379);
     }
 
 
