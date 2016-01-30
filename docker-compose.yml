@@ -5,6 +5,8 @@ customer-service:
   links:
     - redis:local-redis
     - container-exporter:container-exporter
+  environment:
+    - REDIS_HOST=local-redis
 cadvisor:
   image: google/cadvisor
   volumes:

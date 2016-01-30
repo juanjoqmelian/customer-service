@@ -23,14 +23,6 @@ public class CustomerRepository {
     private ObjectMapper objectMapper= new ObjectMapper();
 
 
-    CustomerRepository() {
-//        if (redisClient == null) {
-//            redisClient = RedisClient.create(String.format("redis://%s:%d/0", "local-redis", 6379));
-//        }
-//        connection = redisClient.connect();
-//        syncCommands = connection.sync();
-    }
-
     CustomerRepository(String host, int port) {
         redisClient = RedisClient.create(String.format("redis://%s:%d/0", host, port));
         connection = redisClient.connect();

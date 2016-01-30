@@ -26,7 +26,8 @@ public class CustomerResource {
 
 
     public CustomerResource() {
-        this.customerRepository = CustomerRepositoryFactory.get("local-redis", 6379);
+        final String redisHost = System.getenv("REDIS_HOST") != null ? System.getenv("REDIS_HOST") : "localhost";
+        this.customerRepository = CustomerRepositoryFactory.get(redisHost, 6379);
     }
 
 
