@@ -1,4 +1,4 @@
-package com.drago.microservices;
+package com.drago.microservices.customer;
 
 
 import java.util.Objects;

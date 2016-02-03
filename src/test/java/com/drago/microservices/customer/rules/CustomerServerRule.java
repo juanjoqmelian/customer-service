@@ -1,7 +1,7 @@
-package com.drago.microservices.rules;
+package com.drago.microservices.customer.rules;
 
 
-import com.drago.microservices.CustomerServer;
+import com.drago.microservices.customer.CustomerServer;
 import org.junit.rules.ExternalResource;
 
 import javax.ws.rs.core.UriBuilder;

@@ -7,6 +7,7 @@ customer-service:
     - container-exporter:container-exporter
   environment:
     - REDIS_HOST=local-redis
+    - REDIS_PORT=6379
 cadvisor:
   image: google/cadvisor
   volumes:
@@ -18,8 +19,6 @@ cadvisor:
      - "8099:8080"
 redis:
   image: redis
-  ports:
-    - "6379:6379"
 prometheus:
   build: ./prometheus
   command: -config.file=/etc/prometheus/prometheus.yml -storage.local.memory-chunks=10000

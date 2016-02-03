@@ -1,9 +1,9 @@
-package com.drago.microservices;
+package com.drago.microservices.customer;
 
 
-import com.drago.microservices.exception.CustomerNotFoundException;
-import com.drago.microservices.repository.CustomerRepository;
-import com.drago.microservices.repository.CustomerRepositoryFactory;
+import com.drago.microservices.customer.repository.CustomerRepository;
+import com.drago.microservices.customer.repository.CustomerRepositoryFactory;
+import com.drago.microservices.customer.exception.CustomerNotFoundException;
 import com.google.common.collect.Lists;
 import org.jmock.Expectations;
 import org.jmock.Mockery;

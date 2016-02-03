@@ -1,4 +1,4 @@
-package com.drago.microservices.repository;
+package com.drago.microservices.customer.repository;
 
 
 public class CustomerRepositoryFactory {

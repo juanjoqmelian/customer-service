@@ -1,8 +1,8 @@
-package com.drago.microservices.repository;
+package com.drago.microservices.customer.repository;
 
 
-import com.drago.microservices.Customer;
-import com.drago.microservices.exception.CustomerNotFoundException;
+import com.drago.microservices.customer.Customer;
+import com.drago.microservices.customer.exception.CustomerNotFoundException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Strings;

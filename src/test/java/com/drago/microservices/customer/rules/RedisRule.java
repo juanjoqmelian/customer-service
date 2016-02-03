@@ -1,10 +1,9 @@
-package com.drago.microservices.rules;
+package com.drago.microservices.customer.rules;
 
 
-import com.drago.microservices.Customer;
+import com.drago.microservices.customer.Customer;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.base.Strings;
 import com.lambdaworks.redis.RedisClient;
 import com.lambdaworks.redis.api.StatefulRedisConnection;
 import com.lambdaworks.redis.api.sync.RedisCommands;

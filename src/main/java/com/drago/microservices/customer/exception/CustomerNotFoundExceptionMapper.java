@@ -1,4 +1,4 @@
-package com.drago.microservices.exception;
+package com.drago.microservices.customer.exception;
 
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;

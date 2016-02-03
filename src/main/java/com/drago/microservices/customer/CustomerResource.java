@@ -1,7 +1,8 @@
-package com.drago.microservices;
+package com.drago.microservices.customer;
 
-import com.drago.microservices.repository.CustomerRepository;
-import com.drago.microservices.repository.CustomerRepositoryFactory;
+import com.codahale.metrics.annotation.Timed;
+import com.drago.microservices.customer.repository.CustomerRepository;
+import com.drago.microservices.customer.repository.CustomerRepositoryFactory;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -27,7 +28,8 @@ public class CustomerResource {
 
     public CustomerResource() {
         final String redisHost = System.getenv("REDIS_HOST") != null ? System.getenv("REDIS_HOST") : "localhost";
-        this.customerRepository = CustomerRepositoryFactory.get(redisHost, 6379);
+        final int redisPort = System.getenv("REDIS_PORT") != null ? Integer.valueOf(System.getenv("REDIS_PORT")) : 6379;
+        this.customerRepository = CustomerRepositoryFactory.get(redisHost, redisPort);
     }
 
 
@@ -43,6 +45,7 @@ public class CustomerResource {
     }
 
     @GET
+    @Timed
     @Path("{id}")
     @Produces("application/json")
     public Response getCustomer(@PathParam("id") String id) {

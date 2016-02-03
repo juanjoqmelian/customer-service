@@ -1,9 +1,9 @@
-package com.drago.microservices;
+package com.drago.microservices.customer;
 
 
 
-import com.drago.microservices.rules.CustomerServerRule;
-import com.drago.microservices.rules.RedisRule;
+import com.drago.microservices.customer.rules.CustomerServerRule;
+import com.drago.microservices.customer.rules.RedisRule;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.jackson.JacksonFeature;
@@ -145,6 +145,7 @@ public class CustomerResourceIT {
         List<Customer> customers = response.readEntity(List.class);
         assertThat(customers, hasSize(3));
     }
+
 
     @After
     public void cleanup() {

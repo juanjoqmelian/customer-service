@@ -19,4 +19,16 @@
         <url-pattern>/*</url-pattern>
     </servlet-mapping>
 
+    <servlet>
+        <servlet-name>healthcheck</servlet-name>
+        <servlet-class>com.codahale.metrics.servlets.HealthCheckServlet</servlet-class>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>healthcheck</servlet-name>
+        <url-pattern>/admin/healthcheck/*</url-pattern>
+    </servlet-mapping>
+    <listener>
+        <listener-class>com.drago.microservices.customer.healthcheck.HealthCheckContextListener</listener-class>
+    </listener>
 </web-app>
