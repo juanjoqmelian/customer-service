@@ -1,4 +1,4 @@
-package com.drago.microservices.customer;
+package com.drago.microservices.customer.domain;
 
 
 import org.springframework.data.mongodb.core.mapping.Document;

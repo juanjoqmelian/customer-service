@@ -1,6 +1,7 @@
 package com.drago.microservices.customer;
 
 
+import com.drago.microservices.customer.domain.Customer;
 import com.drago.microservices.customer.exception.CustomerNotFoundException;
 import com.drago.microservices.customer.repository.MongoCustomerRepository;
 import com.google.common.collect.Lists;
@@ -214,6 +215,11 @@ public class CustomerResourceTest {
         Response response = customerResource.delete("fakeCustomerId");
 
         assertThat(response.getStatus(), is(Response.Status.NOT_FOUND.getStatusCode()));
+    }
+
+    @Test
+    public void getOrders_shouldReturnEmptyCollectionIfCustomerHasNoOrders() {
+
     }
 
 

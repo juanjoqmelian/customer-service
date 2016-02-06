@@ -1,7 +1,7 @@
 package com.drago.microservices.customer.repository;
 
 
-import com.drago.microservices.customer.Customer;
+import com.drago.microservices.customer.domain.Customer;
 
 import java.util.List;
 

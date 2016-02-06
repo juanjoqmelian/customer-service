@@ -1,12 +1,11 @@
 package com.drago.microservices.customer.repository;
 
 
-import com.drago.microservices.customer.Customer;
+import com.drago.microservices.customer.domain.Customer;
 import com.drago.microservices.customer.exception.CustomerNotFoundException;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.stereotype.Repository;
 
 import java.util.List;
 

@@ -2,6 +2,8 @@ package com.drago.microservices.customer;
 
 
 
+import com.drago.microservices.customer.domain.Customer;
+import com.drago.microservices.customer.domain.Order;
 import com.drago.microservices.customer.rules.CustomerServerRule;
 import com.drago.microservices.customer.rules.MongoRule;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -24,6 +26,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
@@ -48,6 +51,7 @@ public class CustomerResourceIT {
         clientConfig.register(JacksonFeature.class);
         Client client = ClientBuilder.newClient(clientConfig);
         webTarget = client.target(customerServerRule.baseUri().build());
+        mongoRule.dropCollections();
     }
 
 
@@ -135,16 +139,39 @@ public class CustomerResourceIT {
     }
 
     @Test
-    public void shouldRetrieveAllExistingCustomers() {
+    public void getAll_shouldRetrieveAllExistingCustomers() {
+
+        final Customer firstCustomer = new Customer(UUID.randomUUID().toString(), "Chuck Norris", 9000);
+        mongoRule.insert(firstCustomer);
+        final Customer secondCustomer = new Customer(UUID.randomUUID().toString(), "Steven Seagal", 12000);
+        mongoRule.insert(secondCustomer);
 
         Response response = webTarget.request(MediaType.APPLICATION_JSON_TYPE)
                                     .get(Response.class);
 
         assertThat(response.getStatus(), is(Response.Status.OK.getStatusCode()));
         //TODO - Improve the assertions of this test, shitty right now
-        assertThat(response.getLinks(), hasSize(4));
+        assertThat(response.getLinks(), hasSize(3));
         assertThat(response.getLink("self").getUri(), is(webTarget.getUriBuilder().build()));
         List<Customer> customers = response.readEntity(List.class);
-        assertThat(customers, hasSize(3));
+        assertThat(customers, hasSize(2));
+    }
+
+    @Test
+    public void getOrders_shouldReturnEmptyCollectionIfCustomerHasNoExistingOrders() {
+
+        final Customer customer = new Customer(UUID.randomUUID().toString(), "Chuck Norris", 9000);
+        mongoRule.insert(customer);
+
+        Response response = webTarget.path(customer.getId())
+                .path("/orders")
+                .request(MediaType.APPLICATION_JSON_TYPE)
+                .get(Response.class);
+
+        assertThat(response.getStatus(), is(Response.Status.OK.getStatusCode()));
+        assertThat(response.getLinks(), hasSize(1));
+        assertThat(response.getLink("self").getUri(), is(webTarget.getUriBuilder().path(customer.getId()).path("/orders").build()));
+        List<Order> orders = response.readEntity(List.class);
+        assertThat(orders, is(empty()));
     }
 }

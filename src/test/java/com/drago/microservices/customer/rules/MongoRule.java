@@ -80,7 +80,7 @@ public class MongoRule extends ExternalResource {
         mongoTemplate.remove(objectToBeRemoved);
     }
 
-    private void dropCollections() {
+    public void dropCollections() {
 
         checkNotNull(collections, "Collections can not be a null value");
         checkElementIndex(0, collections.length, "At least one collection must be specified. Collection");

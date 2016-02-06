@@ -1,8 +1,13 @@
 package com.drago.microservices.customer;
 
 import com.codahale.metrics.annotation.Timed;
+import com.drago.microservices.customer.client.OrderClient;
+import com.drago.microservices.customer.domain.CreditLog;
+import com.drago.microservices.customer.domain.Customer;
+import com.drago.microservices.customer.domain.Order;
+import com.drago.microservices.customer.repository.CreditLogRepository;
 import com.drago.microservices.customer.repository.CustomerRepository;
-import com.drago.microservices.customer.repository.CustomerRepositoryFactory;
+import com.drago.microservices.customer.repository.RepositoryFactory;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -24,10 +29,16 @@ public class CustomerResource {
 
     private UriInfo uriInfo;
     private CustomerRepository mongoCustomerRepository;
+    private CreditLogRepository creditLogRepository;
+    private OrderClient orderClient;
 
 
     public CustomerResource() {
-        mongoCustomerRepository = CustomerRepositoryFactory.get("localhost", 27017, "test");
+        mongoCustomerRepository = RepositoryFactory.getCustomerRepository("localhost", 27017, "test");
+        creditLogRepository = RepositoryFactory.getCreditLogRepository("localhost", 27017, "test");
+        String orderServiceHost = System.getenv("ORDERS_HOST") != null ? System.getenv("ORDERS_HOST") : "localhost";
+        int orderServicePort = System.getenv("ORDERS_PORT") != null ? Integer.valueOf(System.getenv("ORDERS_PORT")) : 8080;
+        orderClient = new OrderClient(orderServiceHost, orderServicePort);
     }
 
     @POST
@@ -100,6 +111,22 @@ public class CustomerResource {
 
         mongoCustomerRepository.delete(customerId);
         return Response.noContent().build();
+    }
+
+    @Path("{id}/orders")
+    @GET
+    public Response getOrders(@PathParam("id") String customerId) {
+
+        List<CreditLog> creditLogs = creditLogRepository.findByCustomer(customerId);
+
+        List<Order> orders = new ArrayList<>();
+
+        creditLogs.parallelStream()
+                .forEach(creditLog -> orders.add(orderClient.getOrder(creditLog.getOrderId()).readEntity(Order.class)));
+
+        return Response.ok(orders)
+                .link(uriInfo.getRequestUriBuilder().build(), "self")
+                .build();
     }
 
 

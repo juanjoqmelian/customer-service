@@ -3,7 +3,7 @@ customer-service:
   ports:
     - "8080:8085"
   links:
-    - redis:local-mongo
+    - mongo:local-mongo
     - container-exporter:container-exporter
   environment:
     - MONGO_HOST=local-mongo
