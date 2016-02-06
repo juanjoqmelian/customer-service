@@ -1,9 +1,8 @@
 package com.drago.microservices.customer;
 
 
-import com.drago.microservices.customer.repository.CustomerRepository;
-import com.drago.microservices.customer.repository.CustomerRepositoryFactory;
 import com.drago.microservices.customer.exception.CustomerNotFoundException;
+import com.drago.microservices.customer.repository.MongoCustomerRepository;
 import com.google.common.collect.Lists;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
@@ -12,10 +11,6 @@ import org.jmock.lib.legacy.ClassImposteriser;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
 
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
@@ -27,14 +22,12 @@ import java.util.UUID;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-@RunWith(PowerMockRunner.class)
-@PrepareForTest(CustomerRepositoryFactory.class)
 public class CustomerResourceTest {
 
     private CustomerResource customerResource;
 
     private UriInfo mockUriInfo;
-    private CustomerRepository mockCustomerRepository;
+    private MongoCustomerRepository mockCustomerRepository;
     private Mockery mockery = new JUnit4Mockery() {
         {
             setImposteriser(ClassImposteriser.INSTANCE);
@@ -46,12 +39,10 @@ public class CustomerResourceTest {
     public void setUp() {
 
         mockUriInfo = mockery.mock(UriInfo.class);
-        mockCustomerRepository = mockery.mock(CustomerRepository.class);
+        mockCustomerRepository = mockery.mock(MongoCustomerRepository.class);
 
-        PowerMockito.mockStatic(CustomerRepositoryFactory.class);
-        PowerMockito.when(CustomerRepositoryFactory.get("localhost", 6379)).thenReturn(mockCustomerRepository);
         customerResource = new CustomerResource();
-        customerResource.setCustomerRepository(mockCustomerRepository);
+        customerResource.setMongoCustomerRepository(mockCustomerRepository);
         customerResource.setUriInfo(mockUriInfo);
     }
 

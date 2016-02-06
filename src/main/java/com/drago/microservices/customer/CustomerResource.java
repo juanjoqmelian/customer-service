@@ -23,21 +23,18 @@ import java.util.List;
 public class CustomerResource {
 
     private UriInfo uriInfo;
-    private CustomerRepository customerRepository;
+    private CustomerRepository mongoCustomerRepository;
 
 
     public CustomerResource() {
-        final String redisHost = System.getenv("REDIS_HOST") != null ? System.getenv("REDIS_HOST") : "localhost";
-        final int redisPort = System.getenv("REDIS_PORT") != null ? Integer.valueOf(System.getenv("REDIS_PORT")) : 6379;
-        this.customerRepository = CustomerRepositoryFactory.get(redisHost, redisPort);
+        mongoCustomerRepository = CustomerRepositoryFactory.get("localhost", 27017, "test");
     }
-
 
     @POST
     @Consumes("application/json")
     public Response create(Customer customer) {
 
-        final String customerId = customerRepository.save(customer);
+        final String customerId = mongoCustomerRepository.save(customer);
 
         return Response
                 .created(uriInfo.getAbsolutePathBuilder().path("{id}").build(customerId))
@@ -50,7 +47,7 @@ public class CustomerResource {
     @Produces("application/json")
     public Response getCustomer(@PathParam("id") String id) {
 
-        Customer customer = customerRepository.getCustomer(id);
+        Customer customer = mongoCustomerRepository.getCustomer(id);
         Link selfLink = Link.fromUri(uriInfo.getBaseUriBuilder().path(CustomerResource.class).path(id).build())
                 .rel("self")
                 .build();
@@ -63,7 +60,7 @@ public class CustomerResource {
     @Produces("application/json")
     public Response getAll() {
 
-        List<Customer> customers = customerRepository.getAll();
+        List<Customer> customers = mongoCustomerRepository.getAll();
 
         List<Link> links = new ArrayList<>();
 
@@ -87,7 +84,7 @@ public class CustomerResource {
     @Consumes("application/json")
     public Response update(@PathParam("id") String customerId, Customer customer) {
 
-        customerRepository.update(customer);
+        mongoCustomerRepository.update(customer);
 
         Link selfLink = Link.fromUri(uriInfo.getBaseUriBuilder().path("id").build())
                 .rel("self").build();
@@ -101,7 +98,7 @@ public class CustomerResource {
     @DELETE
     public Response delete(@PathParam("id") String customerId) {
 
-        customerRepository.delete(customerId);
+        mongoCustomerRepository.delete(customerId);
         return Response.noContent().build();
     }
 
@@ -111,8 +108,7 @@ public class CustomerResource {
         this.uriInfo = uriInfo;
     }
 
-
-    public void setCustomerRepository(CustomerRepository customerRepository) {
-        this.customerRepository = customerRepository;
+    public void setMongoCustomerRepository(CustomerRepository mongoCustomerRepository) {
+        this.mongoCustomerRepository = mongoCustomerRepository;
     }
 }

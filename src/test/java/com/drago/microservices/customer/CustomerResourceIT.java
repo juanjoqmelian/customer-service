@@ -3,15 +3,15 @@ package com.drago.microservices.customer;
 
 
 import com.drago.microservices.customer.rules.CustomerServerRule;
-import com.drago.microservices.customer.rules.RedisRule;
+import com.drago.microservices.customer.rules.MongoRule;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.jackson.JacksonFeature;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Test;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
@@ -33,11 +33,12 @@ public class CustomerResourceIT {
 
     private WebTarget webTarget;
 
+
     @ClassRule
     public static CustomerServerRule customerServerRule = new CustomerServerRule();
 
     @ClassRule
-    public static RedisRule redisRule = new RedisRule("localhost", 6379);
+    public static MongoRule mongoRule = new MongoRule(Customer.class);
 
 
     @Before
@@ -67,7 +68,7 @@ public class CustomerResourceIT {
 
         final String customerId = UUID.randomUUID().toString();
         final Customer existingCustomer = new Customer(customerId, "Chuck Norris", 9000);
-        redisRule.insert(existingCustomer);
+        mongoRule.insert(existingCustomer);
 
         Response response = webTarget.path(customerId)
                 .request(MediaType.APPLICATION_JSON_TYPE)
@@ -96,14 +97,15 @@ public class CustomerResourceIT {
 
         final String customerId = UUID.randomUUID().toString();
         final Customer existingCustomer = new Customer(customerId, "Chuck Norris", 9000);
-        redisRule.insert(existingCustomer);
+        mongoRule.insert(existingCustomer);
         final Customer updatedCustomer = new Customer(customerId, "Jean Claude", 10000);
 
         Response response = webTarget.path(customerId).request(MediaType.APPLICATION_JSON_TYPE)
                 .put(Entity.entity(updatedCustomer, MediaType.APPLICATION_JSON_TYPE), Response.class);
 
         assertThat(response.getStatus(), is(Response.Status.NO_CONTENT.getStatusCode()));
-        assertThat(redisRule.getCustomer(customerId), is(updatedCustomer));
+        Customer retrievedCustomer = mongoRule.findOne(Query.query(Criteria.where("id").is(customerId)), Customer.class);
+        assertThat(retrievedCustomer, is(updatedCustomer));
     }
 
     @Test
@@ -122,16 +124,16 @@ public class CustomerResourceIT {
 
         final String customerId = UUID.randomUUID().toString();
         final Customer existingCustomer = new Customer(customerId, "Chuck Norris", 9000);
-        redisRule.insert(existingCustomer);
+        mongoRule.insert(existingCustomer);
 
         Response response = webTarget.path(customerId).request(MediaType.APPLICATION_JSON_TYPE)
                 .delete(Response.class);
 
         assertThat(response.getStatus(), is(Response.Status.NO_CONTENT.getStatusCode()));
-        assertThat(redisRule.getCustomer(customerId), is(nullValue()));
+        Customer retrievedCustomer = mongoRule.findOne(Query.query(Criteria.where("id").is(customerId)), Customer.class);
+        assertThat(retrievedCustomer, is(nullValue()));
     }
 
-    @Ignore("WIP")
     @Test
     public void shouldRetrieveAllExistingCustomers() {
 
@@ -144,11 +146,5 @@ public class CustomerResourceIT {
         assertThat(response.getLink("self").getUri(), is(webTarget.getUriBuilder().build()));
         List<Customer> customers = response.readEntity(List.class);
         assertThat(customers, hasSize(3));
-    }
-
-
-    @After
-    public void cleanup() {
-        redisRule.cleanup();
     }
 }

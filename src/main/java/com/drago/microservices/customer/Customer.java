@@ -1,9 +1,11 @@
 package com.drago.microservices.customer;
 
 
+import org.springframework.data.mongodb.core.mapping.Document;
+
 import java.util.Objects;
 
-
+@Document
 public class Customer {
 
     private String id;

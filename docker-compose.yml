@@ -3,11 +3,12 @@ customer-service:
   ports:
     - "8080:8085"
   links:
-    - redis:local-redis
+    - redis:local-mongo
     - container-exporter:container-exporter
   environment:
-    - REDIS_HOST=local-redis
-    - REDIS_PORT=6379
+    - MONGO_HOST=local-mongo
+    - MONGO_PORT=27017
+    - MONGO_DB=customer
 cadvisor:
   image: google/cadvisor
   volumes:
@@ -17,8 +18,8 @@ cadvisor:
    - /var/lib/docker/:/var/lib/docker:ro
   ports:
      - "8099:8080"
-redis:
-  image: redis
+mongo:
+  image: mongo
 prometheus:
   build: ./prometheus
   command: -config.file=/etc/prometheus/prometheus.yml -storage.local.memory-chunks=10000
