@@ -200,7 +200,7 @@ public class CustomerResourceIT {
                 .willReturn(aResponse()
                         .withHeader("Content-Type", MediaType.APPLICATION_JSON)
                         .withStatus(200)
-                        .withBody("{\"id\":\"1234\",\"customerId\":\"" + customerId + "\",\"amount\":\"29.99\"}")));
+                        .withBody("{\"id\":\"1234\",\"customerId\":\"" + customerId + "\",\"amount\":\"29.99\",\"itemId\":\"item1234\",\"units\":\"2\"}")));
 
         final Customer customer = new Customer(customerId, "Chuck Norris", 9000);
         mongoRule.insert(customer);

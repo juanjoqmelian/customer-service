@@ -10,17 +10,17 @@ public class Order {
     private String customerId;
     private BigDecimal amount;
     private String itemId;
-    private int quantity;
+    private int units;
 
 
     public Order() {}
 
-    public Order(String id, String customerId, BigDecimal amount, String itemId, int quantity) {
+    public Order(String id, String customerId, BigDecimal amount, String itemId, int units) {
         this.id = id;
         this.customerId = customerId;
         this.amount = amount;
         this.itemId = itemId;
-        this.quantity = quantity;
+        this.units = units;
     }
 
     public String getId() {
@@ -39,8 +39,8 @@ public class Order {
         return itemId;
     }
 
-    public int getQuantity() {
-        return quantity;
+    public int getUnits() {
+        return units;
     }
 
 
@@ -49,7 +49,7 @@ public class Order {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Order order = (Order) o;
-        return Objects.equals(quantity, order.quantity) &&
+        return Objects.equals(units, order.units) &&
                 Objects.equals(id, order.id) &&
                 Objects.equals(customerId, order.customerId) &&
                 Objects.equals(amount, order.amount) &&
@@ -58,7 +58,7 @@ public class Order {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, customerId, amount, itemId, quantity);
+        return Objects.hash(id, customerId, amount, itemId, units);
     }
 
     @Override
@@ -68,7 +68,7 @@ public class Order {
                 ", customerId='" + customerId + '\'' +
                 ", amount=" + amount +
                 ", itemId='" + itemId + '\'' +
-                ", quantity=" + quantity +
+                ", units=" + units +
                 '}';
     }
 }
