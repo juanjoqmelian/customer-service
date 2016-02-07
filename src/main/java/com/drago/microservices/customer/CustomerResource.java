@@ -18,6 +18,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.GenericEntity;
 import javax.ws.rs.core.Link;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
@@ -124,7 +125,7 @@ public class CustomerResource {
         creditLogs.parallelStream()
                 .forEach(creditLog -> orders.add(orderClient.getOrder(creditLog.getOrderId()).readEntity(Order.class)));
 
-        return Response.ok(orders)
+        return Response.ok(new GenericEntity<List<Order>>(orders) {})
                 .link(uriInfo.getRequestUriBuilder().build(), "self")
                 .build();
     }

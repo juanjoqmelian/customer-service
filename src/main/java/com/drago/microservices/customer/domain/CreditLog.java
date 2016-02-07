@@ -11,6 +11,14 @@ public class CreditLog {
     private String orderId;
     private BigDecimal amount;
 
+    public CreditLog() {
+    }
+
+    public CreditLog(String customerId, String orderId, BigDecimal amount) {
+        this.customerId = customerId;
+        this.orderId = orderId;
+        this.amount = amount;
+    }
 
     public String getCustomerId() {
         return customerId;

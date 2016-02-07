@@ -1,12 +1,16 @@
 package com.drago.microservices.customer;
 
 
-
+import com.drago.microservices.customer.domain.CreditLog;
 import com.drago.microservices.customer.domain.Customer;
 import com.drago.microservices.customer.domain.Order;
 import com.drago.microservices.customer.rules.CustomerServerRule;
 import com.drago.microservices.customer.rules.MongoRule;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
+import com.github.tomakehurst.wiremock.http.ResponseDefinition;
+import com.github.tomakehurst.wiremock.junit.WireMockClassRule;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.jackson.JacksonFeature;
 import org.junit.Before;
@@ -22,15 +26,21 @@ import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.core.IsCollectionContaining.hasItems;
+import static org.hamcrest.core.IsNot.not;
 
 public class CustomerResourceIT {
 
@@ -42,6 +52,9 @@ public class CustomerResourceIT {
 
     @ClassRule
     public static MongoRule mongoRule = new MongoRule(Customer.class);
+
+    @ClassRule
+    public static WireMockClassRule mockOrderService = new WireMockClassRule(8080);
 
 
     @Before
@@ -147,7 +160,7 @@ public class CustomerResourceIT {
         mongoRule.insert(secondCustomer);
 
         Response response = webTarget.request(MediaType.APPLICATION_JSON_TYPE)
-                                    .get(Response.class);
+                .get(Response.class);
 
         assertThat(response.getStatus(), is(Response.Status.OK.getStatusCode()));
         //TODO - Improve the assertions of this test, shitty right now
@@ -173,5 +186,38 @@ public class CustomerResourceIT {
         assertThat(response.getLink("self").getUri(), is(webTarget.getUriBuilder().path(customer.getId()).path("/orders").build()));
         List<Order> orders = response.readEntity(List.class);
         assertThat(orders, is(empty()));
+    }
+
+    @Test
+    public void getOrders_shouldReturnExistingOrdersForAGivenCustomer() {
+
+        final String customerId = UUID.randomUUID().toString();
+
+        mockOrderService.stubFor(get(urlPathMatching("/"))
+                .willReturn(aResponse()
+                        .withStatus(200)
+                        .withHeader("Link", "<http://localhost:8080/orders/>; rel=\"orders\"")));
+
+        mockOrderService.stubFor(get(urlPathMatching("/orders/1234"))
+                .willReturn(aResponse()
+                        .withHeader("Content-Type", MediaType.APPLICATION_JSON)
+                        .withStatus(200)
+                        .withBody("{\"id\":\"1234\",\"customerId\":\"" + customerId + "\",\"quantity\":\"29.99\"}")));
+
+        final Customer customer = new Customer(customerId, "Chuck Norris", 9000);
+        mongoRule.insert(customer);
+        final CreditLog creditLog = new CreditLog(customer.getId(), "1234", new BigDecimal("29.99"));
+        mongoRule.insert(creditLog);
+
+        Response response = webTarget.path(customer.getId())
+                .path("/orders")
+                .request(MediaType.APPLICATION_JSON_TYPE)
+                .get(Response.class);
+
+        assertThat(response.getStatus(), is(Response.Status.OK.getStatusCode()));
+        assertThat(response.getLinks(), hasSize(1));
+        assertThat(response.getLink("self").getUri(), is(webTarget.getUriBuilder().path(customer.getId()).path("/orders").build()));
+        List<Order> orders = response.readEntity(List.class);
+        assertThat(orders, hasSize(1));
     }
 }
