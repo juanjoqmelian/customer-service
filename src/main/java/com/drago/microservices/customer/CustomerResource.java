@@ -8,6 +8,7 @@ import com.drago.microservices.customer.domain.Order;
 import com.drago.microservices.customer.repository.CreditLogRepository;
 import com.drago.microservices.customer.repository.CustomerRepository;
 import com.drago.microservices.customer.repository.RepositoryFactory;
+import com.google.common.collect.Lists;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -21,6 +22,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.GenericEntity;
 import javax.ws.rs.core.Link;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 import java.util.ArrayList;
 import java.util.List;
@@ -60,11 +62,23 @@ public class CustomerResource {
     public Response getCustomer(@PathParam("id") String id) {
 
         Customer customer = mongoCustomerRepository.getCustomer(id);
-        Link selfLink = Link.fromUri(uriInfo.getBaseUriBuilder().path(CustomerResource.class).path(id).build())
-                .rel("self")
-                .build();
+        Link[] links = new Link[]{
+                Link.fromUri(uriInfo.getBaseUriBuilder().path(CustomerResource.class).path(id).build())
+                        .rel("self")
+                        .build(),
+                Link.fromUri(uriInfo.getBaseUriBuilder().path(CustomerResource.class).path(id).build())
+                        .rel("update")
+                        .type("PUT")
+                        .build(),
+                Link.fromUri(uriInfo.getBaseUriBuilder().path(CustomerResource.class).path(id).build())
+                        .rel("delete")
+                        .type("DELETE")
+                        .build()
+        };
+
+
         return Response.ok(customer)
-                .links(selfLink)
+                .links(links)
                 .build();
     }
 
@@ -125,8 +139,18 @@ public class CustomerResource {
         creditLogs.parallelStream()
                 .forEach(creditLog -> orders.add(orderClient.getOrder(creditLog.getOrderId()).readEntity(Order.class)));
 
-        return Response.ok(new GenericEntity<List<Order>>(orders) {})
+        List<Link> ordersLinks = new ArrayList<>();
+
+        orders.stream()
+                .forEach(order -> ordersLinks.add(
+                        Link.fromUriBuilder(
+                                UriBuilder.fromUri(orderClient.getOrderServiceUri()).path(order.getId())).rel("order")
+                                .build()));
+
+        return Response.ok(new GenericEntity<List<Order>>(orders) {
+        })
                 .link(uriInfo.getRequestUriBuilder().build(), "self")
+                .links((Link[]) ordersLinks.toArray(new Link[ordersLinks.size()]))
                 .build();
     }
 

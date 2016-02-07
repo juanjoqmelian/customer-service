@@ -7,9 +7,6 @@ import com.drago.microservices.customer.domain.Order;
 import com.drago.microservices.customer.rules.CustomerServerRule;
 import com.drago.microservices.customer.rules.MongoRule;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
-import com.github.tomakehurst.wiremock.http.ResponseDefinition;
 import com.github.tomakehurst.wiremock.junit.WireMockClassRule;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.jackson.JacksonFeature;
@@ -25,6 +22,7 @@ import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriBuilder;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.List;
@@ -39,8 +37,6 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
-import static org.hamcrest.core.IsCollectionContaining.hasItems;
-import static org.hamcrest.core.IsNot.not;
 
 public class CustomerResourceIT {
 
@@ -92,7 +88,10 @@ public class CustomerResourceIT {
                 .get(Response.class);
 
         assertThat(response.getStatus(), is(Response.Status.OK.getStatusCode()));
+        assertThat(response.getLinks(), hasSize(3));
         assertThat(response.getLink("self").getUri(), is(webTarget.getUriBuilder().path(customerId).build()));
+        assertThat(response.getLink("update").getUri(), is(webTarget.getUriBuilder().path(customerId).build()));
+        assertThat(response.getLink("delete").getUri(), is(webTarget.getUriBuilder().path(customerId).build()));
         Customer customer = response.readEntity(Customer.class);
         assertThat(customer, is(new Customer(customerId, "Chuck Norris", 9000)));
     }
@@ -163,7 +162,6 @@ public class CustomerResourceIT {
                 .get(Response.class);
 
         assertThat(response.getStatus(), is(Response.Status.OK.getStatusCode()));
-        //TODO - Improve the assertions of this test, shitty right now
         assertThat(response.getLinks(), hasSize(3));
         assertThat(response.getLink("self").getUri(), is(webTarget.getUriBuilder().build()));
         List<Customer> customers = response.readEntity(List.class);
@@ -202,7 +200,7 @@ public class CustomerResourceIT {
                 .willReturn(aResponse()
                         .withHeader("Content-Type", MediaType.APPLICATION_JSON)
                         .withStatus(200)
-                        .withBody("{\"id\":\"1234\",\"customerId\":\"" + customerId + "\",\"quantity\":\"29.99\"}")));
+                        .withBody("{\"id\":\"1234\",\"customerId\":\"" + customerId + "\",\"amount\":\"29.99\"}")));
 
         final Customer customer = new Customer(customerId, "Chuck Norris", 9000);
         mongoRule.insert(customer);
@@ -215,8 +213,9 @@ public class CustomerResourceIT {
                 .get(Response.class);
 
         assertThat(response.getStatus(), is(Response.Status.OK.getStatusCode()));
-        assertThat(response.getLinks(), hasSize(1));
+        assertThat(response.getLinks(), hasSize(2));
         assertThat(response.getLink("self").getUri(), is(webTarget.getUriBuilder().path(customer.getId()).path("/orders").build()));
+        assertThat(response.getLink("order").getUri(), is(UriBuilder.fromPath("http://localhost:8080").path("/orders").path("1234").build()));
         List<Order> orders = response.readEntity(List.class);
         assertThat(orders, hasSize(1));
     }

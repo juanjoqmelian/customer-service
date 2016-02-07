@@ -75,7 +75,7 @@ public class CustomerResourceTest {
 
         mockery.checking(new Expectations() {
             {
-                oneOf(mockUriInfo).getBaseUriBuilder();
+                atLeast(1).of(mockUriInfo).getBaseUriBuilder();
                 will(returnValue(uriBuilder));
 
                 oneOf(mockCustomerRepository).getCustomer(expectedCustomer.getId());
