@@ -8,7 +8,6 @@ import com.drago.microservices.customer.domain.Order;
 import com.drago.microservices.customer.repository.CreditLogRepository;
 import com.drago.microservices.customer.repository.CustomerRepository;
 import com.drago.microservices.customer.repository.RepositoryFactory;
-import com.google.common.collect.Lists;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -68,11 +67,9 @@ public class CustomerResource {
                         .build(),
                 Link.fromUri(uriInfo.getBaseUriBuilder().path(CustomerResource.class).path(id).build())
                         .rel("update")
-                        .type("PUT")
                         .build(),
                 Link.fromUri(uriInfo.getBaseUriBuilder().path(CustomerResource.class).path(id).build())
                         .rel("delete")
-                        .type("DELETE")
                         .build()
         };
 
